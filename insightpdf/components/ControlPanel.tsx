@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { AppStatus, ChatMessage, LocatorResult } from '../types';
-import { Upload, Send, FileText, Loader2, MapPin, Bot, User, RotateCcw, Zap, BrainCircuit, ChevronDown, Check, Settings, Moon, Sun, CloudLightning, Github, Star, Key, Globe } from 'lucide-react';
+import { Upload, Send, FileText, Loader2, MapPin, Bot, User, RotateCcw, Zap, BrainCircuit, ChevronDown, Check, Settings, Moon, Sun, CloudLightning, Github, Star, Key, Globe, Copy } from 'lucide-react';
 import { storage } from '../services/storageService';
 import Toggle from './Toggle';
 import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 interface ControlPanelProps {
   onFileUpload: (file: File) => void;
@@ -43,6 +45,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [customConfig, setCustomConfig] = useState<{enabled: boolean, apiKey: string, baseUrl: string}>({
     enabled: false, apiKey: '', baseUrl: ''
   });
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -98,16 +101,28 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
     }
   };
 
+  const isLoading = status === AppStatus.PROCESSING_FILE || status === AppStatus.SEARCHING;
+  const isUploading = status === AppStatus.PROCESSING_FILE;
+  const isSearching = status === AppStatus.SEARCHING;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim() && currentFile && status !== AppStatus.SEARCHING) {
+    // Allow input during upload, but prevent submit until upload is complete
+    if (query.trim() && currentFile && !isSearching && !isUploading) {
       onSearch(query);
       setQuery('');
     }
   };
 
-  const isLoading = status === AppStatus.PROCESSING_FILE || status === AppStatus.SEARCHING;
-  const isUploading = status === AppStatus.PROCESSING_FILE;
+  const copyToClipboard = async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   const models = [
     { id: 'gemini-3-flash-preview', name: '3 Flash', icon: Zap },
@@ -357,15 +372,33 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             
             <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div 
-                className={`p-3 rounded-2xl text-sm leading-relaxed ${
+                className={`p-3 rounded-2xl text-sm leading-relaxed relative group ${
                   msg.role === 'user' 
-                    ? 'bg-indigo-600 text-white rounded-tr-sm shadow-md whitespace-pre-wrap' 
-                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-tl-sm shadow-sm'
+                    ? 'bg-indigo-600 text-white rounded-tr-sm shadow-md whitespace-pre-wrap pr-10' 
+                    : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-tl-sm shadow-sm pr-10'
                 }`}
               >
+                <button
+                  onClick={() => copyToClipboard(msg.text, msg.id)}
+                  className={`absolute top-2 right-2 p-1.5 rounded-md transition-all duration-200 opacity-0 group-hover:opacity-100 focus:opacity-100 ${
+                    msg.role === 'user'
+                      ? 'text-white/70 hover:text-white hover:bg-white/10'
+                      : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                  title="Copy message"
+                >
+                  {copiedId === msg.id ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </button>
+
                 {msg.role === 'ai' ? (
                   <ReactMarkdown
                     className="space-y-2"
+                    remarkPlugins={[remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
                     components={{
                       a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline break-words" />,
                       p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0 leading-relaxed" />,
@@ -442,7 +475,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={currentFile ? "Ask about the PDF..." : "Upload a file first"}
-            disabled={!currentFile || isLoading}
+            disabled={!currentFile || isSearching}
             className="flex-1 p-3 bg-transparent border-none focus:ring-0 outline-none text-sm text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 disabled:opacity-50"
           />
           <button
