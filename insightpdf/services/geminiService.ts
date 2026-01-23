@@ -6,36 +6,38 @@ const getClient = () => {
   const customConfig = storage.getCustomConfig();
   let apiKey = (customConfig.enabled && customConfig.apiKey) ? customConfig.apiKey : process.env.API_KEY;
 
-  if (apiKey) {
-    apiKey = apiKey.trim();
-  }
-
   if (!apiKey) {
     throw new Error("API Key is missing.");
   }
 
+  // 1. Strong cleaning: Remove all spaces, newlines (\n), and carriage returns (\r)
+  // Copy-pasting often introduces invisible characters causing "API key not valid" errors.
+  apiKey = apiKey.replace(/[\n\r\s]/g, '');
+
   const options: any = { apiKey };
 
   if (customConfig.enabled && customConfig.baseUrl) {
-    let baseUrl = customConfig.baseUrl.trim();
+    let cleanUrl = customConfig.baseUrl.trim();
     
-    // Remove trailing slash
-    if (baseUrl.endsWith('/')) {
-      baseUrl = baseUrl.slice(0, -1);
-    }
+    // 2. Remove trailing slash
+    cleanUrl = cleanUrl.replace(/\/$/, '');
 
-    // Remove version suffix if present because SDK appends it automatically
+    // 3. Remove version suffix if present because SDK appends it automatically
     // e.g. https://api.example.com/v1beta -> https://api.example.com
-    if (baseUrl.endsWith('/v1beta')) {
-      baseUrl = baseUrl.slice(0, -7);
-    } else if (baseUrl.endsWith('/v1')) {
-      baseUrl = baseUrl.slice(0, -3);
+    if (cleanUrl.endsWith('/v1beta')) {
+      cleanUrl = cleanUrl.substring(0, cleanUrl.length - 7);
+    } else if (cleanUrl.endsWith('/v1')) {
+      cleanUrl = cleanUrl.substring(0, cleanUrl.length - 3);
     }
 
-    if (baseUrl) {
-      options.baseUrl = baseUrl;
+    if (cleanUrl.length > 0) {
+      options.baseUrl = cleanUrl;
     }
   }
+
+  // Debug logs (Visible in F12 Console)
+  console.log('[InsightPDF] Configured BaseURL:', options.baseUrl || 'Official Google Endpoint');
+  console.log('[InsightPDF] Using Key (first 4 chars):', apiKey.substring(0, 4) + '****');
 
   return new GoogleGenAI(options);
 };
