@@ -1,118 +1,68 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { AppStatus, ChatMessage, LocatorResult } from '../types';
 import { fileToGenerativePart, chatWithPdf, uploadFileToGemini } from '../services/geminiService';
-import { saveFileToDB, getFileFromDB, storage } from '../services/storageService';
+import { storage } from '../services/storageService';
+import { useSettings } from './useSettings';
+import { useFileHandler } from './useFileHandler';
+import { useChatSession } from './useChatSession';
 
 export const useChatController = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [activeResult, setActiveResult] = useState<LocatorResult | null>(null);
-  const [model, setModel] = useState<string>('gemini-3-flash-preview');
-  const [useFilesApi, setUseFilesApi] = useState<boolean>(true);
-  const [uploadedFileUri, setUploadedFileUri] = useState<string | null>(null);
-  const [isHydrated, setIsHydrated] = useState(false);
+  // Use modular hooks
+  const { 
+    model, 
+    setModel, 
+    useFilesApi, 
+    toggleFilesApi, 
+    isSettingsHydrated 
+  } = useSettings();
 
-  // Avoid saving during hydration
-  const initialLoadRef = useRef(true);
+  const { 
+    file, 
+    setFile, 
+    saveFile, 
+    uploadedFileUri, 
+    setUploadedFileUri, 
+    isFileHydrated 
+  } = useFileHandler();
 
-  // --- Hydration (Load from Storage) ---
+  const { 
+    status, 
+    setStatus, 
+    messages, 
+    setMessages, 
+    activeResult, 
+    setActiveResult, 
+    clearSession, 
+    isChatHydrated 
+  } = useChatSession();
+
+  const isHydrated = isSettingsHydrated && isFileHydrated && isChatHydrated;
+
+  // Sync initial status if file exists but no messages (e.g., cleared chat but kept file)
   useEffect(() => {
-    const loadState = async () => {
-      try {
-        // Load Settings
-        const savedModel = storage.getModel('gemini-3-flash-preview');
-        const savedUseFilesApi = storage.getUseFilesApi(true);
-        setModel(savedModel);
-        setUseFilesApi(savedUseFilesApi);
-
-        // Load Metadata
-        const savedMessages = storage.getMessages();
-        const savedActiveResult = storage.getActiveResult();
-        const savedUri = storage.getUploadedUri();
-
-        setMessages(savedMessages);
-        setActiveResult(savedActiveResult);
-        setUploadedFileUri(savedUri);
-
-        // Load File from IndexedDB
-        const savedFile = await getFileFromDB();
-        if (savedFile) {
-          setFile(savedFile);
-        }
-
-        if (savedMessages.length > 0 || savedFile) {
-          // If we restored state, ensure we aren't stuck in a loading state
-          setStatus(AppStatus.SUCCESS);
-        }
-      } catch (error) {
-        console.error("Failed to hydrate state:", error);
-      } finally {
-        setIsHydrated(true);
-        // Small delay to ensure the initial render doesn't trigger save effects immediately with empty state if anything was async
-        setTimeout(() => { initialLoadRef.current = false; }, 100);
-      }
-    };
-
-    loadState();
-  }, []);
-
-  // --- Persistence Effects ---
-
-  // Save Messages
-  useEffect(() => {
-    if (!initialLoadRef.current && isHydrated) {
-      storage.saveMessages(messages);
+    if (isHydrated && file && status === AppStatus.IDLE && messages.length === 0) {
+      // Keep IDLE or set to SUCCESS if you want to show the viewer immediately?
+      // Currently, if there is a file, the viewer renders. 
+      // If we reloaded the page with a file but no messages, IDLE is appropriate.
+      // If we reloaded with messages, useChatSession sets SUCCESS.
     }
-  }, [messages, isHydrated]);
-
-  // Save Active Result
-  useEffect(() => {
-    if (!initialLoadRef.current && isHydrated) {
-      storage.saveActiveResult(activeResult);
-    }
-  }, [activeResult, isHydrated]);
-
-  // Save Model
-  useEffect(() => {
-    if (isHydrated) {
-      storage.saveModel(model);
-    }
-  }, [model, isHydrated]);
-
-  // Save UseFilesApi
-  useEffect(() => {
-    if (isHydrated) {
-      storage.saveUseFilesApi(useFilesApi);
-    }
-  }, [useFilesApi, isHydrated]);
-
-  // Save Uploaded URI
-  useEffect(() => {
-    if (!initialLoadRef.current && isHydrated) {
-      storage.saveUploadedUri(uploadedFileUri);
-    }
-  }, [uploadedFileUri, isHydrated]);
-
-
-  // --- Handlers ---
-
-  const toggleFilesApi = useCallback(() => {
-    setUseFilesApi(prev => !prev);
-  }, []);
+  }, [isHydrated, file, status, messages.length]);
 
   const handleFileUpload = useCallback(async (uploadedFile: File) => {
-    setFile(uploadedFile);
-    setUploadedFileUri(null); 
-    setMessages([]); 
-    setActiveResult(null);
+    // 1. Reset Chat Session
+    clearSession();
     
-    // Clear old data from storage
-    storage.clearAllMetadata();
-    
-    // Save new file to IDB
-    saveFileToDB(uploadedFile).catch(err => console.error("Failed to save file to DB", err));
-    
+    // 2. Save File State (IDB)
+    try {
+      await saveFile(uploadedFile);
+    } catch (err) {
+      console.error("Failed to save file to DB", err);
+    }
+
+    // 3. Clear old URI since we have a new file
+    setUploadedFileUri(null);
+
+    // 4. Handle Upload if using Files API
     if (useFilesApi) {
       setStatus(AppStatus.PROCESSING_FILE);
       try {
@@ -126,23 +76,19 @@ export const useChatController = () => {
     } else {
       setStatus(AppStatus.IDLE);
     }
-  }, [useFilesApi]);
+  }, [useFilesApi, clearSession, saveFile, setStatus, setUploadedFileUri]);
 
   const handleClearChat = useCallback(() => {
-    setMessages([]);
-    setActiveResult(null);
-    setStatus(AppStatus.IDLE);
-    // Note: We deliberately do NOT clear the file, uploaded URI, or IDB entry here.
-    // The user just wants to restart the conversation with the same file.
-
-    // Clear Storage (Chat only)
-    storage.clearChatSession();
-  }, []);
+    // Just clear the conversation, keep the file
+    clearSession();
+    // Re-set status to IDLE is handled by clearSession, but strictly speaking 
+    // if a file is present we might want to ensure we don't look "empty"
+    // However, AppStatus.IDLE with a file present is a valid state.
+  }, [clearSession]);
 
   const handleViewLocation = useCallback((result: LocatorResult) => {
-    // Force reference update to ensure PdfViewer effect triggers even if clicking the same location
     setActiveResult({ ...result });
-  }, []);
+  }, [setActiveResult]);
 
   const handleSearch = useCallback(async (query: string) => {
     if (!file) return;
@@ -167,7 +113,7 @@ export const useChatController = () => {
           setStatus(AppStatus.PROCESSING_FILE);
           currentUri = await uploadFileToGemini(file);
           setUploadedFileUri(currentUri);
-          setStatus(AppStatus.SEARCHING);
+          setStatus(AppStatus.SEARCHING); // Restore searching status
         }
 
         filePart = {
@@ -204,7 +150,7 @@ export const useChatController = () => {
       console.error(error);
       setStatus(AppStatus.ERROR);
     }
-  }, [file, model, useFilesApi, uploadedFileUri]);
+  }, [file, model, useFilesApi, uploadedFileUri, setMessages, setStatus, setActiveResult, setUploadedFileUri]);
 
   return {
     file,
@@ -219,6 +165,6 @@ export const useChatController = () => {
     handleSearch,
     handleViewLocation,
     toggleFilesApi,
-    isHydrated // Exposed for UI loading states if needed
+    isHydrated
   };
 };

@@ -42,7 +42,7 @@ const PdfOverlay: React.FC<PdfOverlayProps> = ({ result, pageNumber, showOverlay
         }}
       >
         <div className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded mb-1 shadow-md whitespace-nowrap">
-          Found Here
+          位于此处
         </div>
         <ArrowDown className="w-8 h-8 text-red-600 drop-shadow-md" strokeWidth={3} />
       </div>

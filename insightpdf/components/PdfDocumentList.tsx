@@ -88,7 +88,7 @@ const PdfDocumentList: React.FC<PdfDocumentListProps> = ({
                         className="bg-white animate-pulse flex items-center justify-center text-gray-400 text-sm"
                         style={{ width: scaledWidth, height: scaledWidth * 1.294 }}
                       >
-                        Loading Page {pageIndex}...
+                        正在加载第 {pageIndex} 页...
                       </div>
                     }
                   />
@@ -103,7 +103,7 @@ const PdfDocumentList: React.FC<PdfDocumentListProps> = ({
                   className="w-full h-full flex items-center justify-center text-gray-300 text-sm bg-white"
                   style={{ height: scaledWidth * 1.294 }}
                 >
-                  <span className="sr-only">Page {pageIndex}</span>
+                  <span className="sr-only">第 {pageIndex} 页</span>
                 </div>
               )}
             </div>

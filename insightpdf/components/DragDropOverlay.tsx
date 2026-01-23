@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Upload } from 'lucide-react';
 
 interface DragDropOverlayProps {
@@ -20,8 +20,8 @@ const DragDropOverlay: React.FC<DragDropOverlayProps> = ({ isDragging, onDragLea
     >
       <div className="flex flex-col items-center p-12 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl animate-bounce">
         <Upload className="w-24 h-24 text-indigo-600 mb-6" strokeWidth={1.5} />
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Drop PDF to Upload</h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">Release anywhere to start analyzing</p>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">拖放 PDF 以上传</h2>
+        <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">释放以开始分析</p>
       </div>
     </div>
   );

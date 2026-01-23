@@ -97,7 +97,7 @@ export const chatWithPdf = async (
     User Query: "${query}"
 
     Instructions:
-    1. First, analyze the document to answer the user's question. Put the answer in the 'answer' field.
+    1. First, analyze the document to answer the user's question. Put the answer in the 'answer' field. **IMPORTANT: ALWAYS Answer in Simplified Chinese (简体中文).**
     2. If the user is asking to find something, or if the answer refers to a specific diagram, table, or paragraph, provide the location details.
     3. If providing location:
        - Identify the most relevant page.

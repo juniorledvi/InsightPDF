@@ -52,7 +52,7 @@ const PdfToolbar: React.FC<PdfToolbarProps> = ({
         <button 
           onClick={onToggleOverlay}
           className={`p-2 rounded-full transition-colors ${showOverlay ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400'}`}
-          title={showOverlay ? "Hide Location" : "Show Location"}
+          title={showOverlay ? "隐藏定位" : "显示定位"}
         >
           {showOverlay ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
         </button>
@@ -63,7 +63,7 @@ const PdfToolbar: React.FC<PdfToolbarProps> = ({
           <button
             onClick={onFitToWidth}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400"
-            title="Fit to Width"
+            title="适应宽度"
           >
             <ArrowLeftRight className="w-5 h-5" />
           </button>
@@ -73,7 +73,7 @@ const PdfToolbar: React.FC<PdfToolbarProps> = ({
           <button
             onClick={onFitToWindow}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400"
-            title="Fit to Page"
+            title="适应页面"
           >
             <Expand className="w-5 h-5" />
           </button>
