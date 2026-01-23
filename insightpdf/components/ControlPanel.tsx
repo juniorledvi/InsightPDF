@@ -21,6 +21,7 @@ interface ControlPanelProps {
   onToggleTheme: () => void;
   useFilesApi: boolean;
   onToggleFilesApi: () => void;
+  errorMessage: string | null;
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ 
@@ -36,7 +37,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   theme,
   onToggleTheme,
   useFilesApi,
-  onToggleFilesApi
+  onToggleFilesApi,
+  errorMessage
 }) => {
   const [query, setQuery] = React.useState('');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
@@ -502,8 +504,28 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           )}
           
           {status === AppStatus.ERROR && (
-            <div className="flex justify-center">
-              <span className="text-xs text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">生成回复出错，请重试。</span>
+            <div className="flex flex-col items-center justify-center gap-1.5 py-4 animate-in fade-in slide-in-from-bottom-2 px-4">
+              <span className="text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-md border border-red-100 dark:border-red-900/30 flex items-center gap-1.5">
+                 <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                  生成回复出错
+              </span>
+              {errorMessage && (
+                 <div className="text-xs text-red-500 dark:text-red-400 text-center break-words w-full font-mono bg-red-50/50 dark:bg-red-900/10 p-2 rounded border border-red-100 dark:border-red-900/20">
+                    {errorMessage}
+                 </div>
+              )}
+              <button 
+                onClick={() => {
+                   // Optional: add retry logic via prop or just re-submit manually
+                   // Since we don't have retry prop, user has to re-submit
+                }}
+                className="text-[10px] text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 mt-1"
+              >
+                请尝试更换模型或重新发送
+              </button>
             </div>
           )}
 

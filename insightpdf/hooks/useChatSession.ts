@@ -6,6 +6,7 @@ export const useChatSession = () => {
   const [status, setStatus] = useState<AppStatus>(AppStatus.IDLE);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [activeResult, setActiveResult] = useState<LocatorResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isChatHydrated, setIsChatHydrated] = useState(false);
   
   const initialLoadRef = useRef(true);
@@ -51,6 +52,7 @@ export const useChatSession = () => {
   const clearSession = useCallback(() => {
     setMessages([]);
     setActiveResult(null);
+    setErrorMessage(null);
     setStatus(AppStatus.IDLE);
     storage.clearChatSession();
   }, []);
@@ -62,6 +64,8 @@ export const useChatSession = () => {
     setMessages,
     activeResult,
     setActiveResult,
+    errorMessage,
+    setErrorMessage,
     clearSession,
     isChatHydrated
   };

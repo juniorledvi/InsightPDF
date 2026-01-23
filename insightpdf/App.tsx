@@ -24,6 +24,7 @@ const App: React.FC = () => {
     activeResult,
     model,
     useFilesApi,
+    errorMessage,
     setModel,
     handleFileUpload,
     handleClearChat,
@@ -93,6 +94,7 @@ const App: React.FC = () => {
             onToggleTheme={toggleTheme}
             useFilesApi={useFilesApi}
             onToggleFilesApi={toggleFilesApi}
+            errorMessage={errorMessage}
           />
         </ResizableSidebar>
       </div>

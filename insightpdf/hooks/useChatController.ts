@@ -32,6 +32,8 @@ export const useChatController = () => {
     setMessages, 
     activeResult, 
     setActiveResult, 
+    errorMessage,
+    setErrorMessage,
     clearSession, 
     isChatHydrated 
   } = useChatSession();
@@ -61,6 +63,7 @@ export const useChatController = () => {
 
     // 3. Clear old URI since we have a new file
     setUploadedFileUri(null);
+    setErrorMessage(null);
 
     // 4. Handle Upload if using Files API
     if (useFilesApi) {
@@ -69,14 +72,15 @@ export const useChatController = () => {
         const uri = await uploadFileToGemini(uploadedFile);
         setUploadedFileUri(uri);
         setStatus(AppStatus.IDLE);
-      } catch (error) {
+      } catch (error: any) {
         console.error("File upload failed:", error);
+        setErrorMessage(error.message || "File upload failed.");
         setStatus(AppStatus.ERROR);
       }
     } else {
       setStatus(AppStatus.IDLE);
     }
-  }, [useFilesApi, clearSession, saveFile, setStatus, setUploadedFileUri]);
+  }, [useFilesApi, clearSession, saveFile, setStatus, setUploadedFileUri, setErrorMessage]);
 
   const handleClearChat = useCallback(() => {
     // Just clear the conversation, keep the file
@@ -92,6 +96,8 @@ export const useChatController = () => {
 
   const handleSearch = useCallback(async (query: string) => {
     if (!file) return;
+
+    setErrorMessage(null);
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
@@ -146,11 +152,12 @@ export const useChatController = () => {
       }
       
       setStatus(AppStatus.SUCCESS);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      setErrorMessage(error.message || "An error occurred while generating content.");
       setStatus(AppStatus.ERROR);
     }
-  }, [file, model, useFilesApi, uploadedFileUri, setMessages, setStatus, setActiveResult, setUploadedFileUri]);
+  }, [file, model, useFilesApi, uploadedFileUri, setMessages, setStatus, setActiveResult, setUploadedFileUri, setErrorMessage]);
 
   return {
     file,
@@ -159,6 +166,7 @@ export const useChatController = () => {
     activeResult,
     model,
     useFilesApi,
+    errorMessage,
     setModel,
     handleFileUpload,
     handleClearChat,
