@@ -84,9 +84,18 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ file, result }) => {
     // Only auto-fit on initial load of the file
     if (!pdfPageSize) {
       setPdfPageSize({ width: page.originalWidth, height: page.originalHeight });
-      const bestScale = calculateFitScale(page.originalWidth, page.originalHeight);
-      // Ensure we don't zoom in crazy amounts if the PDF is tiny, but generally allow fit
-      setScale(Math.min(1.0, bestScale)); 
+      
+      // Smart default: 
+      // If landscape (like slides), fit to window so you see the whole slide.
+      // If portrait (like docs), fit to width so text is readable.
+      const isLandscape = page.originalWidth > page.originalHeight;
+      
+      if (isLandscape) {
+         const bestScale = calculateFitScale(page.originalWidth, page.originalHeight);
+         setScale(bestScale);
+      } else {
+         setScale(1.0); // Fit Width
+      }
     }
   };
 
@@ -97,6 +106,10 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ file, result }) => {
     } else {
       setScale(1.0);
     }
+  };
+
+  const handleFitToWidth = () => {
+    setScale(1.0);
   };
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
@@ -136,6 +149,7 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ file, result }) => {
         onToggleOverlay={() => setShowOverlay(!showOverlay)}
         onZoom={handleZoom}
         onFitToWindow={handleFitToWindow}
+        onFitToWidth={handleFitToWidth}
       />
 
       {/* PDF Canvas - Continuous Scroll */}

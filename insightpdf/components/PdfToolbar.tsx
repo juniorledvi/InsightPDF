@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, ChevronLeft, ZoomIn, ZoomOut, Eye, EyeOff, Expand } from 'lucide-react';
+import { ChevronRight, ChevronLeft, ZoomIn, ZoomOut, Eye, EyeOff, Expand, ArrowLeftRight } from 'lucide-react';
 
 interface PdfToolbarProps {
   pageNumber: number;
@@ -10,6 +10,7 @@ interface PdfToolbarProps {
   onToggleOverlay: () => void;
   onZoom: (delta: number) => void;
   onFitToWindow?: () => void;
+  onFitToWidth?: () => void;
 }
 
 const PdfToolbar: React.FC<PdfToolbarProps> = ({
@@ -20,7 +21,8 @@ const PdfToolbar: React.FC<PdfToolbarProps> = ({
   onPageChange,
   onToggleOverlay,
   onZoom,
-  onFitToWindow
+  onFitToWindow,
+  onFitToWidth
 }) => {
   return (
     <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex items-center justify-between shadow-sm z-20 transition-colors">
@@ -57,11 +59,21 @@ const PdfToolbar: React.FC<PdfToolbarProps> = ({
         
         <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
 
+        {onFitToWidth && (
+          <button
+            onClick={onFitToWidth}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400"
+            title="Fit to Width"
+          >
+            <ArrowLeftRight className="w-5 h-5" />
+          </button>
+        )}
+
         {onFitToWindow && (
           <button
             onClick={onFitToWindow}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400"
-            title="Fit to Window"
+            title="Fit to Page"
           >
             <Expand className="w-5 h-5" />
           </button>
