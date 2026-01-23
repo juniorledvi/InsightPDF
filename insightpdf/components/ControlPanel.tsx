@@ -1,9 +1,9 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { AppStatus, ChatMessage, LocatorResult } from '../types';
 import { Upload, Send, FileText, Loader2, MapPin, Bot, User, RotateCcw, Zap, BrainCircuit, ChevronDown, Check, Settings, Moon, Sun, CloudLightning, Github, Star, Key, Globe } from 'lucide-react';
 import { storage } from '../services/storageService';
 import Toggle from './Toggle';
+import ReactMarkdown from 'react-markdown';
 
 interface ControlPanelProps {
   onFileUpload: (file: File) => void;
@@ -357,13 +357,37 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             
             <div className={`flex flex-col max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div 
-                className={`p-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                className={`p-3 rounded-2xl text-sm leading-relaxed ${
                   msg.role === 'user' 
-                    ? 'bg-indigo-600 text-white rounded-tr-sm shadow-md' 
+                    ? 'bg-indigo-600 text-white rounded-tr-sm shadow-md whitespace-pre-wrap' 
                     : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-tl-sm shadow-sm'
                 }`}
               >
-                {msg.text}
+                {msg.role === 'ai' ? (
+                  <ReactMarkdown
+                    className="space-y-2"
+                    components={{
+                      a: ({node, ...props}) => <a {...props} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline break-words" />,
+                      p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0 leading-relaxed" />,
+                      ul: ({node, ...props}) => <ul {...props} className="list-disc pl-5 mb-2 space-y-1" />,
+                      ol: ({node, ...props}) => <ol {...props} className="list-decimal pl-5 mb-2 space-y-1" />,
+                      li: ({node, ...props}) => <li {...props} className="pl-1" />,
+                      strong: ({node, ...props}) => <strong {...props} className="font-semibold" />,
+                      pre: ({node, ...props}) => <pre {...props} className="bg-gray-800 dark:bg-gray-900/50 text-gray-100 p-3 rounded-lg overflow-x-auto my-2 text-xs font-mono border border-gray-700" />,
+                      code: ({node, className, children, ...props}) => {
+                        const isBlock = /language-(\w+)/.exec(className || '');
+                        if (isBlock) {
+                             return <code {...props} className={`font-mono text-xs ${className}`}>{children}</code>
+                        }
+                        return <code {...props} className="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-xs font-mono text-pink-600 dark:text-pink-400 break-all">{children}</code>
+                      }
+                    }}
+                  >
+                    {msg.text}
+                  </ReactMarkdown>
+                ) : (
+                  msg.text
+                )}
               </div>
 
               {/* Location Card if AI found something */}

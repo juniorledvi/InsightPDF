@@ -51,7 +51,7 @@ const ResizableSidebar: React.FC<ResizableSidebarProps> = ({ children, isDesktop
   }, [isResizing, resize, stopResizing]);
 
   return (
-    <>
+    <div className="flex h-full relative">
       {/* Sidebar Wrapper */}
       <div 
         className="flex-shrink-0 w-full md:w-auto relative flex flex-col h-full border-b md:border-b-0 border-gray-200 dark:border-gray-800"
@@ -62,20 +62,25 @@ const ResizableSidebar: React.FC<ResizableSidebarProps> = ({ children, isDesktop
 
       {/* Resizer Handle (Desktop Only) */}
       <div
-        className="hidden md:flex w-2 -ml-1 hover:w-3 z-50 cursor-col-resize items-center justify-center group hover:bg-indigo-500/10 transition-all select-none flex-shrink-0 relative"
+        className="hidden md:flex w-4 -ml-2 z-50 cursor-col-resize items-center justify-center group hover:bg-transparent transition-all select-none flex-shrink-0 relative h-full"
         onMouseDown={startResizing}
       >
-        <div className="w-[1px] h-full bg-gray-200 dark:bg-gray-800 group-hover:bg-indigo-500 transition-colors" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm p-0.5">
+        {/* Visual Line area */}
+        <div className="w-1 h-full flex justify-center group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/10 transition-colors">
+            <div className="w-[1px] h-full bg-gray-200 dark:bg-gray-800 group-hover:bg-indigo-400 transition-colors" />
+        </div>
+        
+        {/* Grip Icon */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm p-0.5 pointer-events-none">
            <GripVertical className="w-3 h-3 text-gray-500" />
         </div>
       </div>
 
       {/* Overlay to catch mouse events over iframe/canvas during resizing */}
       {isResizing && (
-        <div className="absolute inset-0 z-50 cursor-col-resize bg-transparent" />
+        <div className="fixed inset-0 z-[100] cursor-col-resize bg-transparent" />
       )}
-    </>
+    </div>
   );
 };
 
