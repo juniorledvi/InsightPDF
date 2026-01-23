@@ -1,6 +1,44 @@
-import { Type } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { LocatorResult } from '../types';
-import { getGeminiClient } from './apiClient';
+import { storage } from './storageService';
+
+const getClient = () => {
+  const customConfig = storage.getCustomConfig();
+  let apiKey = (customConfig.enabled && customConfig.apiKey) ? customConfig.apiKey : process.env.API_KEY;
+
+  if (apiKey) {
+    apiKey = apiKey.trim();
+  }
+
+  if (!apiKey) {
+    throw new Error("API Key is missing.");
+  }
+
+  const options: any = { apiKey };
+
+  if (customConfig.enabled && customConfig.baseUrl) {
+    let baseUrl = customConfig.baseUrl.trim();
+    
+    // Remove trailing slash
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.slice(0, -1);
+    }
+
+    // Remove version suffix if present because SDK appends it automatically
+    // e.g. https://api.example.com/v1beta -> https://api.example.com
+    if (baseUrl.endsWith('/v1beta')) {
+      baseUrl = baseUrl.slice(0, -7);
+    } else if (baseUrl.endsWith('/v1')) {
+      baseUrl = baseUrl.slice(0, -3);
+    }
+
+    if (baseUrl) {
+      options.baseUrl = baseUrl;
+    }
+  }
+
+  return new GoogleGenAI(options);
+};
 
 export const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
   return new Promise((resolve, reject) => {
@@ -21,8 +59,7 @@ export const fileToGenerativePart = async (file: File): Promise<{ inlineData: { 
 };
 
 export const uploadFileToGemini = async (file: File): Promise<string> => {
-  // 使用统一的客户端，确保走自定义 URL
-  const ai = getGeminiClient();
+  const ai = getClient();
   
   const response = await ai.files.upload({
     file: file,
@@ -40,8 +77,7 @@ export const chatWithPdf = async (
   query: string,
   modelName: string
 ): Promise<LocatorResult> => {
-  // 使用统一的客户端，确保走自定义 URL
-  const ai = getGeminiClient();
+  const ai = getClient();
 
   // Schema handles both a conversational answer and optional location data
   const responseSchema = {
