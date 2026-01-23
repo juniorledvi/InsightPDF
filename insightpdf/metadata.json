@@ -1,0 +1,5 @@
+{
+  "name": "InsightPDF",
+  "description": "Upload a PDF, ask a question, and let Gemini 3 Flash pinpoint the exact location and page of the answer with a visual arrow.",
+  "requestFramePermissions": []
+}
