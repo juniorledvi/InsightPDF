@@ -16,27 +16,14 @@ const getClient = () => {
 
   const options: any = { apiKey };
 
-  if (customConfig.enabled && customConfig.baseUrl) {
-    let cleanUrl = customConfig.baseUrl.trim();
-    
-    // 2. Remove trailing slash
-    cleanUrl = cleanUrl.replace(/\/$/, '');
-
-    // 3. Remove version suffix if present because SDK appends it automatically
-    // e.g. https://api.example.com/v1beta -> https://api.example.com
-    if (cleanUrl.endsWith('/v1beta')) {
-      cleanUrl = cleanUrl.substring(0, cleanUrl.length - 7);
-    } else if (cleanUrl.endsWith('/v1')) {
-      cleanUrl = cleanUrl.substring(0, cleanUrl.length - 3);
-    }
-
-    if (cleanUrl.length > 0) {
-      options.baseUrl = cleanUrl;
-    }
-  }
-
+  // NOTE: BaseURL handling has been moved to services/networkInterceptor.ts
+  // This prevents the SDK from generating malformed URLs (like /v1beta/v1beta) 
+  // and allows handling both /upload and standard endpoints uniformly via global fetch interception.
+  
   // Debug logs (Visible in F12 Console)
-  console.log('[InsightPDF] Configured BaseURL:', options.baseUrl || 'Official Google Endpoint');
+  if (customConfig.enabled && customConfig.baseUrl) {
+    console.log('[InsightPDF] Using Custom BaseURL via Interceptor:', customConfig.baseUrl);
+  }
   console.log('[InsightPDF] Using Key (first 4 chars):', apiKey.substring(0, 4) + '****');
 
   return new GoogleGenAI(options);
