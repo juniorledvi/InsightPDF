@@ -1,23 +1,6 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
 import { LocatorResult } from '../types';
-import { storage } from './storageService';
-
-const getClient = () => {
-  const customConfig = storage.getCustomConfig();
-  const apiKey = (customConfig.enabled && customConfig.apiKey) ? customConfig.apiKey : process.env.API_KEY;
-
-  if (!apiKey) {
-    throw new Error("API Key is missing.");
-  }
-
-  const options: any = { apiKey };
-
-  if (customConfig.enabled && customConfig.baseUrl) {
-    options.baseUrl = customConfig.baseUrl;
-  }
-
-  return new GoogleGenAI(options);
-};
+import { getGeminiClient } from './apiClient';
 
 export const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
   return new Promise((resolve, reject) => {
@@ -38,7 +21,8 @@ export const fileToGenerativePart = async (file: File): Promise<{ inlineData: { 
 };
 
 export const uploadFileToGemini = async (file: File): Promise<string> => {
-  const ai = getClient();
+  // 使用统一的客户端，确保走自定义 URL
+  const ai = getGeminiClient();
   
   const response = await ai.files.upload({
     file: file,
@@ -56,7 +40,8 @@ export const chatWithPdf = async (
   query: string,
   modelName: string
 ): Promise<LocatorResult> => {
-  const ai = getClient();
+  // 使用统一的客户端，确保走自定义 URL
+  const ai = getGeminiClient();
 
   // Schema handles both a conversational answer and optional location data
   const responseSchema = {
