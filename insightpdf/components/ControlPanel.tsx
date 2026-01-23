@@ -1,7 +1,9 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { AppStatus, ChatMessage, LocatorResult } from '../types';
-import { Upload, Send, FileText, Loader2, MapPin, Bot, User, RotateCcw, Zap, BrainCircuit, ChevronDown, Check, Settings, Moon, Sun, CloudLightning, Github, Star } from 'lucide-react';
+import { Upload, Send, FileText, Loader2, MapPin, Bot, User, RotateCcw, Zap, BrainCircuit, ChevronDown, Check, Settings, Moon, Sun, CloudLightning, Github, Star, Key, Globe } from 'lucide-react';
+import { storage } from '../services/storageService';
+import Toggle from './Toggle';
 
 interface ControlPanelProps {
   onFileUpload: (file: File) => void;
@@ -38,6 +40,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [starCount, setStarCount] = useState<number | null>(null);
+  const [customConfig, setCustomConfig] = useState<{enabled: boolean, apiKey: string, baseUrl: string}>({
+    enabled: false, apiKey: '', baseUrl: ''
+  });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -48,6 +53,17 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, status]);
+
+  // Load Custom Config
+  useEffect(() => {
+    setCustomConfig(storage.getCustomConfig());
+  }, []);
+
+  const handleCustomConfigChange = (key: keyof typeof customConfig, value: any) => {
+    const newConfig = { ...customConfig, [key]: value };
+    setCustomConfig(newConfig);
+    storage.saveCustomConfig(newConfig);
+  };
 
   // Fetch GitHub stars
   useEffect(() => {
@@ -156,7 +172,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   <Settings className="w-4 h-4" />
                 </button>
                 {isSettingsOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+                  <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-3 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right max-h-[85vh] overflow-y-auto">
                     <div className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-2">Settings</div>
                     
                     {/* Theme Toggle */}
@@ -187,15 +203,55 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                         <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">Use Files API</span>
                         <span className="text-[9px] text-gray-400 dark:text-gray-500">Faster for large PDFs</span>
                       </div>
-                      <button 
-                        onClick={onToggleFilesApi}
-                        className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${useFilesApi ? 'bg-indigo-500' : 'bg-gray-300 dark:bg-gray-600'}`}
-                        title="Toggle Files API"
-                      >
-                        <div 
-                          className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-spring ${useFilesApi ? 'translate-x-4' : 'translate-x-0.5'}`}
-                        />
-                      </button>
+                      <Toggle 
+                        checked={useFilesApi} 
+                        onChange={onToggleFilesApi} 
+                        label="Toggle Files API"
+                      />
+                    </div>
+
+                    {/* Custom API Config */}
+                    <div className="p-2 bg-gray-50 dark:bg-gray-750 rounded-lg mb-3 space-y-2">
+                       <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">Custom API</span>
+                          <Toggle 
+                            checked={customConfig.enabled} 
+                            onChange={() => handleCustomConfigChange('enabled', !customConfig.enabled)} 
+                            label="Toggle Custom API"
+                          />
+                       </div>
+                       
+                       {customConfig.enabled && (
+                         <div className="space-y-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                            <div className="space-y-1">
+                              <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">API Key</label>
+                              <div className="relative">
+                                <Key className="absolute left-2 top-1.5 w-3 h-3 text-gray-400" />
+                                <input 
+                                  type="password"
+                                  value={customConfig.apiKey}
+                                  onChange={(e) => handleCustomConfigChange('apiKey', e.target.value)}
+                                  placeholder="sk-..."
+                                  className="w-full pl-7 pr-2 py-1.5 text-xs bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded focus:border-indigo-500 outline-none transition-colors dark:text-gray-100"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-1">
+                              <label className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Base URL</label>
+                              <div className="relative">
+                                <Globe className="absolute left-2 top-1.5 w-3 h-3 text-gray-400" />
+                                <input 
+                                  type="text"
+                                  value={customConfig.baseUrl}
+                                  onChange={(e) => handleCustomConfigChange('baseUrl', e.target.value)}
+                                  placeholder="https://..."
+                                  className="w-full pl-7 pr-2 py-1.5 text-xs bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded focus:border-indigo-500 outline-none transition-colors dark:text-gray-100"
+                                />
+                              </div>
+                            </div>
+                         </div>
+                       )}
                     </div>
 
                     {/* GitHub Link */}

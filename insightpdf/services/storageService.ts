@@ -93,6 +93,7 @@ const KEYS = {
   MODEL: 'insight_model',
   USE_FILES_API: 'insight_use_files_api',
   UPLOADED_URI: 'insight_uploaded_uri',
+  CUSTOM_CONFIG: 'insight_custom_config',
 };
 
 export const storage = {
@@ -139,10 +140,23 @@ export const storage = {
     return localStorage.getItem(KEYS.UPLOADED_URI);
   },
 
+  saveCustomConfig: (config: { enabled: boolean; apiKey: string; baseUrl: string }) => {
+    localStorage.setItem(KEYS.CUSTOM_CONFIG, JSON.stringify(config));
+  },
+  getCustomConfig: (): { enabled: boolean; apiKey: string; baseUrl: string } => {
+    const data = localStorage.getItem(KEYS.CUSTOM_CONFIG);
+    return data ? JSON.parse(data) : { enabled: false, apiKey: '', baseUrl: '' };
+  },
+
   clearAllMetadata: () => {
     localStorage.removeItem(KEYS.MESSAGES);
     localStorage.removeItem(KEYS.ACTIVE_RESULT);
     localStorage.removeItem(KEYS.UPLOADED_URI);
-    // Note: We deliberately don't clear settings like Model or UseFilesApi preference
+    // Note: We deliberately don't clear settings like Model, UseFilesApi or CustomConfig
+  },
+
+  clearChatSession: () => {
+    localStorage.removeItem(KEYS.MESSAGES);
+    localStorage.removeItem(KEYS.ACTIVE_RESULT);
   }
 };

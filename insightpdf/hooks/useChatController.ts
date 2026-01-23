@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { AppStatus, ChatMessage, LocatorResult } from '../types';
 import { fileToGenerativePart, chatWithPdf, uploadFileToGemini } from '../services/geminiService';
-import { saveFileToDB, getFileFromDB, clearFileFromDB, storage } from '../services/storageService';
+import { saveFileToDB, getFileFromDB, storage } from '../services/storageService';
 
 export const useChatController = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -128,16 +128,15 @@ export const useChatController = () => {
     }
   }, [useFilesApi]);
 
-  const handleClearChat = useCallback(async () => {
+  const handleClearChat = useCallback(() => {
     setMessages([]);
     setActiveResult(null);
     setStatus(AppStatus.IDLE);
-    setFile(null);
-    setUploadedFileUri(null);
+    // Note: We deliberately do NOT clear the file, uploaded URI, or IDB entry here.
+    // The user just wants to restart the conversation with the same file.
 
-    // Clear Storage
-    storage.clearAllMetadata();
-    await clearFileFromDB();
+    // Clear Storage (Chat only)
+    storage.clearChatSession();
   }, []);
 
   const handleViewLocation = useCallback((result: LocatorResult) => {

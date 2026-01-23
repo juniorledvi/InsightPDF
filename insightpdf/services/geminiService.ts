@@ -1,5 +1,23 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { LocatorResult } from '../types';
+import { storage } from './storageService';
+
+const getClient = () => {
+  const customConfig = storage.getCustomConfig();
+  const apiKey = (customConfig.enabled && customConfig.apiKey) ? customConfig.apiKey : process.env.API_KEY;
+
+  if (!apiKey) {
+    throw new Error("API Key is missing.");
+  }
+
+  const options: any = { apiKey };
+
+  if (customConfig.enabled && customConfig.baseUrl) {
+    options.baseUrl = customConfig.baseUrl;
+  }
+
+  return new GoogleGenAI(options);
+};
 
 export const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
   return new Promise((resolve, reject) => {
@@ -20,12 +38,7 @@ export const fileToGenerativePart = async (file: File): Promise<{ inlineData: { 
 };
 
 export const uploadFileToGemini = async (file: File): Promise<string> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API Key is missing.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = getClient();
   
   const response = await ai.files.upload({
     file: file,
@@ -43,12 +56,7 @@ export const chatWithPdf = async (
   query: string,
   modelName: string
 ): Promise<LocatorResult> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API Key is missing.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = getClient();
 
   // Schema handles both a conversational answer and optional location data
   const responseSchema = {

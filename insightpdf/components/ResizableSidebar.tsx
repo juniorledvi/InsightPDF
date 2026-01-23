@@ -54,7 +54,7 @@ const ResizableSidebar: React.FC<ResizableSidebarProps> = ({ children, isDesktop
     <>
       {/* Sidebar Wrapper */}
       <div 
-        className="flex-shrink-0 w-full md:w-auto relative flex flex-col h-[40vh] md:h-full border-b md:border-b-0 border-gray-200 dark:border-gray-800"
+        className="flex-shrink-0 w-full md:w-auto relative flex flex-col h-full border-b md:border-b-0 border-gray-200 dark:border-gray-800"
         style={{ width: isDesktop ? sidebarWidth : '100%' }}
       >
         {children}
