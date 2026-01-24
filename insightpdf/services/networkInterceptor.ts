@@ -14,9 +14,15 @@ export const mountNetworkInterceptor = () => {
     return;
   }
 
-  const originalFetch = window.fetch;
+  // Ensure window and fetch exist
+  if (typeof window === 'undefined' || !window.fetch) {
+    return;
+  }
 
-  window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+  // Bind to window to preserve context if necessary
+  const originalFetch = window.fetch.bind(window);
+
+  const proxyFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     try {
       // 1. Get current config from storage (real-time, so no refresh needed)
       const config = storage.getCustomConfig();
@@ -93,6 +99,23 @@ export const mountNetworkInterceptor = () => {
       return originalFetch(input, init);
     }
   };
+
+  // Attempt to override fetch safely
+  try {
+    window.fetch = proxyFetch;
+  } catch (err) {
+    // If direct assignment fails (e.g., read-only property), try Object.defineProperty
+    try {
+      Object.defineProperty(window, 'fetch', {
+        value: proxyFetch,
+        writable: true,
+        configurable: true
+      });
+    } catch (defineErr) {
+      console.error('[InsightPDF] Failed to intercept window.fetch. Custom Base URLs may not work.', defineErr);
+      return;
+    }
+  }
 
   isMounted = true;
   console.log('[InsightPDF] Network Interceptor Mounted');
