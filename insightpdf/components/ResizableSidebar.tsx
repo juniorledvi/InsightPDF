@@ -10,7 +10,8 @@ interface ResizableSidebarProps {
 }
 
 const ResizableSidebar: React.FC<ResizableSidebarProps> = ({ children, isDesktop }) => {
-  const [sidebarWidth, setSidebarWidth] = useState(350);
+  // Increased default width by 10% (350 * 1.1 = 385)
+  const [sidebarWidth, setSidebarWidth] = useState(385);
   const [isResizing, setIsResizing] = useState(false);
 
   const startResizing = useCallback(() => setIsResizing(true), []);
